@@ -152,8 +152,7 @@ Ao final, exibe placar acumulado e histórico completo.
 ▶️ **Como Executar**
 
 **1. Clone o repositório:**
-
-git clone https://github.com/Santosdevbjj/jogoDaForca/edit/main/README.md
+git clone https://github.com/userGit/jogoDaForca
 
 cd jogo-da-forca-java
 
