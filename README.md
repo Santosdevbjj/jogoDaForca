@@ -35,7 +35,7 @@ O jogo roda no console e foi projetado para praticar conceitos de POO, como enca
 
 📂 **Explicação das Classes**
 
-**1. App.java**
+📂**1. App.java**
 
 Ponto de entrada da aplicação (main).
 
@@ -44,13 +44,13 @@ Cria uma instância de JogoDaForca e chama iniciar() para iniciar o jogo.
 
 
 
-**2. PalavraInvalidaException.java**
+📂**2. PalavraInvalidaException.java**
 
 Exceção personalizada lançada quando a palavra secreta é inválida (vazia ou nula).
 
 
 
-**3. Dicionario.java**
+📂**3. Dicionario.java**
 
 Contém os temas e as listas de palavras disponíveis.
 
@@ -60,7 +60,7 @@ Contém os temas e as listas de palavras disponíveis.
 
 
 
-**4. Palavra.java**
+📂**4. Palavra.java**
 
 Representa a palavra secreta do jogo.
 
@@ -76,7 +76,7 @@ Gerencia o estado atual (letras descobertas).
 
 
 
-**5. Forca.java**
+📂**5. Forca.java**
 
 Controla o número de erros e gera o **desenho ASCII** do boneco.
 
@@ -90,7 +90,7 @@ Mantém lista de letras erradas.
 
 
 
-**6. Jogador.java**
+📂**6. Jogador.java**
 
 Representa um jogador, armazenando:
 
@@ -103,7 +103,7 @@ Pontuação acumulada.
 
 
 
-**7. Historico.java**
+📂**7. Historico.java**
 
 Salva e carrega histórico de partidas em **arquivo CSV** (historico_forca.csv).
 
@@ -128,7 +128,7 @@ Resultado (VENCEU ou PERDEU).
 
 
 
-**8. JogoDaForca.java**
+📂**8. JogoDaForca.java**
 
 Controla todo o fluxo do jogo:
 
