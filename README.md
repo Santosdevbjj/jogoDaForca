@@ -153,7 +153,8 @@ Ao final, exibe placar acumulado e histórico completo.
 
 **1. Clone o repositório:**
 
-git clone https://github.com/seuusuario/jogo-da-forca-java.git
+git clone https://github.com/Santosdevbjj/jogoDaForca/edit/main/README.md
+
 cd jogo-da-forca-java
 
 
@@ -212,6 +213,9 @@ João: 0 ponto(s)
 
 
 ## Jogo da Forca - Entendendo como jogar
+
+<img width="1080" height="1048" alt="Screenshot_20250729-194841" src="https://github.com/user-attachments/assets/1f1be0f8-abae-4806-a913-067523e08240" />
+
 
 
 - Para brincar de Forca, vamos precisar de uma caneta e um papel.
