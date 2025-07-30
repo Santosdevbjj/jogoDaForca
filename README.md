@@ -33,6 +33,13 @@ O jogo roda no console e foi projetado para praticar conceitos de POO, como enca
 
 
 
+✅ **Diagrama UML (Classes Principais)**
+
+
+<img width="1024" height="1536" alt="DiagramaUMLForca" src="https://github.com/user-attachments/assets/6690eb11-f89f-4b49-b26b-9c71333f2161" />
+
+
+
 📂 **Explicação das Classes**
 
 📂**1. App.java**
