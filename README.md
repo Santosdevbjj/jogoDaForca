@@ -215,5 +215,3 @@ Se fosse recomeçar, começaria desenhando o UML antes de escrever a primeira li
 
 ---
 
-> *"O mercado de trabalho não contrata quem usa ferramentas — contrata quem resolve problemas com elas."*
-> — Meigarom Lopes
