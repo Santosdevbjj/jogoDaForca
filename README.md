@@ -1,182 +1,118 @@
-## Criando um Jogo da Forca com uma Aplicação Console Java.
-
 ![NTT-Java](https://github.com/user-attachments/assets/149e1032-79be-4f8a-8fb0-2019216b05e3)
 
+# 🪢 Jogo da Forca em Java — Console Application
 
-**Bootcamp NTT DATA - Java e IA para Iniciantes**
+> **Bootcamp NTT DATA — Java e IA para Iniciantes**
 
+---
 
-🪢 **Jogo da Forca em Java (Console)**
+## 1. 🧩 Problema de Negócio
 
-📌 **Descrição do Projeto**
+Projetos de console são frequentemente descartados em portfólios com a justificativa de que "são simples demais para impressionar". Essa visão ignora algo fundamental: **a complexidade não está no que o projeto faz, mas em como foi construído**.
 
-Este projeto é uma implementação completa do jogo da forca em Java, com Programação Orientada a Objetos (POO), menu robusto, temas pré-definidos, modo multi-jogador, pontuação acumulada, histórico de partidas salvo em arquivo CSV e desenho ASCII do boneco da forca.
+Um jogo da forca mal implementado é um arquivo `main` com centenas de linhas, `if/else` aninhados, variáveis globais e nenhuma separação de responsabilidades. Funciona — mas não escala, não é testável e não demonstra maturidade de código.
 
-O jogo roda no console e foi projetado para praticar conceitos de POO, como encapsulamento, separação de responsabilidades, manipulação de listas, enums, exceções personalizadas e persistência simples em arquivos.
+> **O desafio real deste projeto:** construir um jogo da forca que qualquer desenvolvedor lendo o código consiga entender, modificar e estender — sem quebrar o que já funciona. Um projeto simples, escrito como engenheiro de software pensa.
 
+---
 
-✅ **Funcionalidades**
+## 2. 📌 Contexto
 
-- Escolha de temas pré-definidos (Animais, Cores, Países);
+O projeto foi desenvolvido como parte do Bootcamp NTT DATA — Java e IA para Iniciantes, com foco em aplicar **Programação Orientada a Objetos na prática**, não apenas na teoria.
 
-- **Modo multi-jogador:** escolha do número de jogadores e alternância de turnos;
+O Jogo da Forca foi escolhido porque o domínio é conhecido por todos — qualquer pessoa consegue jogar e validar o comportamento — mas implementá-lo com qualidade exige resolver problemas reais de design:
 
-- Controle de erros e exibição visual do boneco (ASCII);
+- Como separar o estado da palavra secreta da lógica do jogo?
+- Como representar os erros sem misturar apresentação com regra de negócio?
+- Como persistir o histórico de partidas sem travar a lógica principal?
+- Como suportar múltiplos jogadores sem transformar o código em um emaranhado de condicionais?
 
-- Tentativas de letras ou palavra completa;
+A aplicação resultante suporta **modo multi-jogador**, **temas de palavras**, **pontuação acumulada**, **tentativa de palavra completa** e **histórico de partidas persistido em CSV** — tudo isso com cada responsabilidade isolada em sua própria classe.
 
-- Pontuação acumulada por jogador;
+---
 
-- Histórico de partidas salvo em arquivo CSV, incluindo data, jogador, tema, palavra e resultado;
+## 3. 📐 Premissas da Solução
 
-- Menu para jogar várias rodadas e exibir placar final.
+As seguintes premissas guiaram cada decisão de design ao longo do desenvolvimento:
 
+- **Uma classe, uma responsabilidade** — `Palavra` gerencia o estado da palavra, `Forca` gerencia os erros e o boneco ASCII, `Historico` cuida da persistência. Nenhuma delas sabe o que a outra faz internamente;
+- **Exceções de domínio têm nome próprio** — `PalavraInvalidaException` existe porque "palavra inválida" é um conceito do jogo, não um erro genérico de sistema;
+- **O histórico não bloqueia o jogo** — a gravação em CSV não está acoplada ao fluxo principal. Se o arquivo falhar, o jogo continua;
+- **O boneco ASCII é calculado, não hard-coded** — `Forca.getBonecoAscii()` retorna a representação correta com base no número atual de erros, sem uma string gigante com todos os estados;
+- **Nenhum `System.out.println` dentro das classes de domínio** — apresentação é responsabilidade de `JogoDaForca`, as classes de modelo apenas retornam dados.
 
+---
 
-✅ **Diagrama UML (Classes Principais)**
+## 4. ⚙️ Estratégia da Solução
 
+A construção seguiu uma abordagem de **domínio primeiro, interface depois** — o mesmo princípio usado em sistemas enterprise, aplicado a um jogo de console.
+
+**Passo 1 — Modelagem do domínio**
+Identificação das entidades do jogo como classes com responsabilidades claras: `Palavra` (estado da palavra secreta), `Forca` (controle de erros e representação visual), `Jogador` (identidade e pontuação), `Dicionario` (fonte de palavras por tema).
+
+**Passo 2 — Exceção personalizada**
+Criação de `PalavraInvalidaException` para proteger o construtor de `Palavra` contra entradas inválidas (nulas ou vazias) — programação defensiva aplicada desde a camada de modelo.
+
+**Passo 3 — Persistência desacoplada**
+`Historico` encapsula toda a lógica de leitura e escrita em CSV. `JogoDaForca` apenas chama `historico.registrar(...)` — sem saber nada sobre o formato do arquivo ou onde ele é salvo.
+
+**Passo 4 — Orquestrador de fluxo**
+`JogoDaForca` atua como orquestrador: cadastra jogadores, gerencia turnos, processa tentativas (letra ou palavra completa) e coordena a atualização do placar. É a única classe com acesso ao console.
+
+**Passo 5 — Multi-jogador com alternância de turnos**
+Implementado com uma lista de `Jogador` e controle de índice — sem duplicação de lógica para cada jogador. Adicionar um terceiro ou quarto jogador não exige nenhuma mudança no código.
+
+---
+
+## 5. 💡 Insights Técnicos
+
+Os aprendizados mais valiosos vieram das decisões que pareciam triviais mas tinham consequências diretas na qualidade do código:
+
+- **`Set<Character>` para letras erradas, não `List`.** A primeira implementação usou `List` — e exigia `contains()` com complexidade linear. Trocar para `Set` foi uma mudança de uma linha que melhorou a semântica e a performance ao mesmo tempo.
+
+- **O boneco ASCII como função do estado, não como constante.** A tentação inicial era ter um array com 7 strings pré-montadas (uma para cada nível de erro). A solução final calcula o boneco dinamicamente — o que permite personalizar partes sem reescrever todas as representações.
+
+- **`PalavraInvalidaException` revelou um bug de design.** Ao criar a exceção, ficou claro que havia dois lugares no código que criavam `Palavra` sem validar a entrada. A exceção forçou a centralizar a validação no construtor — e eliminou código defensivo duplicado.
+
+- **Persistência em CSV tem armadilha de encoding.** Na primeira execução em sistemas Windows, caracteres especiais do português (ã, ç, é) apareciam corrompidos no arquivo. A solução foi especificar `StandardCharsets.UTF_8` explicitamente no `FileWriter` — um detalhe que não aparece em nenhum tutorial básico de escrita em arquivo.
+
+- **A separação entre `JogoDaForca` e as classes de modelo** tornou fácil testar as regras de negócio isoladamente. `Palavra.tentarLetra('A')` pode ser chamada em um teste sem precisar simular console, arquivo ou jogadores — porque a classe não depende de nada externo.
+
+---
+
+## 6. 📊 Resultados
+
+| Funcionalidade | Status |
+|---|---|
+| Escolha de tema (Animais, Cores, Países) | ✅ |
+| Modo multi-jogador com alternância de turnos | ✅ |
+| Tentativa de letra ou palavra completa | ✅ |
+| Boneco ASCII progressivo por número de erros | ✅ |
+| Pontuação acumulada por jogador | ✅ |
+| Histórico de partidas salvo em CSV | ✅ |
+| Exceção personalizada para palavra inválida | ✅ |
+| Placar final com ranking de jogadores | ✅ |
+
+**Diagrama UML das classes:**
 
 <img width="1024" height="1536" alt="DiagramaUMLForca" src="https://github.com/user-attachments/assets/6690eb11-f89f-4b49-b26b-9c71333f2161" />
 
-
-
-📂 **Explicação das Classes**
-
-📂**1. App.java**
-
-Ponto de entrada da aplicação (main).
-
-Cria uma instância de JogoDaForca e chama iniciar() para iniciar o jogo.
-
-
-
-
-📂**2. PalavraInvalidaException.java**
-
-Exceção personalizada lançada quando a palavra secreta é inválida (vazia ou nula).
-
-
-
-📂**3. Dicionario.java**
-
-Contém os temas e as listas de palavras disponíveis.
-
-**Método palavraAleatoria(tema)** retorna uma palavra aleatória do tema escolhido.
-
-**Método temasDisponiveis()** retorna os nomes dos temas cadastrados.
-
-
-
-📂**4. Palavra.java**
-
-Representa a palavra secreta do jogo.
-
-Gerencia o estado atual (letras descobertas).
-
-**Métodos principais:**
-
-**tentarLetra(char letra):** verifica e revela as letras corretas.
-
-**isCompleta():** indica se a palavra foi completamente descoberta.
-
-**getEstado():** retorna a palavra com as letras descobertas e tracinhos para as ocultas.
-
-
-
-📂**5. Forca.java**
-
-Controla o número de erros e gera o **desenho ASCII** do boneco.
-
-Mantém lista de letras erradas.
-
-**Métodos principais:**
-
-**registrarErro(char letra):** adiciona letra errada e retorna se jogador foi enforcado.
-
-**getBonecoAscii():** retorna a representação gráfica atual.
-
-
-
-📂**6. Jogador.java**
-
-Representa um jogador, armazenando:
-
-Nome;
-
-Pontuação acumulada.
-
-
-**Método adicionarPonto()** para incrementar a pontuação ao vencer.
-
-
-
-📂**7. Historico.java**
-
-Salva e carrega histórico de partidas em **arquivo CSV** (historico_forca.csv).
-
-Grava as seguintes informações:
-
-Nome do jogador;
-
-Data da partida;
-
-Tema;
-
-Palavra secreta;
-
-Resultado (VENCEU ou PERDEU).
-
-
-**Métodos:**
-
-**registrar(...):** adiciona registro no arquivo.
-
-**lerTudo():** retorna lista com todas as linhas do histórico.
-
-
-
-📂**8. JogoDaForca.java**
-
-Controla todo o fluxo do jogo:
-
-Cadastro de jogadores.
-
-**Menu para escolher tema.**
-
-Alternância de turnos entre jogadores.
-
-Opção de tentar letra ou palavra completa.
-
-Atualização do placar.
-
-Persistência no histórico.
-
-
-Ao final, exibe placar acumulado e histórico completo.
-
-
-
-▶️ **Como Executar**
-
-**1. Clone o repositório:**
-git clone https://github.com/userGit/jogoDaForca
-
-cd jogo-da-forca-java
-
-
-**2. Compile o projeto:**
-
-javac -d out src/**/*.java
-
-
-**3. Execute a aplicação:**
-
-java -cp out App
-
-
-
-📘 **Exemplo de Execução no Console**
-
+**Arquitetura de classes e responsabilidades:**
+
+| Classe | Responsabilidade |
+|---|---|
+| `App` | Ponto de entrada — instancia e inicia `JogoDaForca` |
+| `Palavra` | Estado da palavra secreta — letras descobertas e ocultas |
+| `Forca` | Controle de erros e geração do boneco ASCII |
+| `Jogador` | Identidade e pontuação acumulada de cada participante |
+| `Dicionario` | Repositório de palavras por tema com seleção aleatória |
+| `Historico` | Leitura e escrita de partidas em arquivo CSV |
+| `JogoDaForca` | Orquestrador — fluxo completo do jogo e interface com console |
+| `PalavraInvalidaException` | Exceção de domínio para entradas inválidas |
+
+**Exemplo real de execução:**
+
+```
 ### Forca Multi-Jogadores ###
 Quantos jogadores? 2
 Nome do jogador 1: Ana
@@ -187,13 +123,10 @@ Escolha um tema: Animais
 
 Turno: Ana
 Palavra: _ _ _ _ _ _ _
-Erradas: []
-Erros: 0/6
+Erradas: []  |  Erros: 0/6
 Opções: (1) Letra  (2) Palavra => 1
 Digite uma letra: A
-Acertou!
-
-...
+Acertou! ✅
 
 === Histórico ===
 Jogador,Data,Tema,Palavra,Resultado
@@ -203,67 +136,84 @@ João,2025-07-28,Animais,CACHORRO,PERDEU
 === Placar Final ===
 Ana: 1 ponto(s)
 João: 0 ponto(s)
-
-
-
-📚 **Recursos Técnicos**
-
-**POO aplicada:** encapsulamento, abstração, separação de responsabilidades.
-
-**Manipulação de arquivos:** leitura e escrita em CSV.
-
-**Coleções:** uso de Map, List, Set.
-
-**ASCII Art:** representação do boneco com base nos erros.
-
-
-
-## Jogo da Forca - Entendendo como jogar
-
-<img width="1080" height="1048" alt="Screenshot_20250729-194841" src="https://github.com/user-attachments/assets/1f1be0f8-abae-4806-a913-067523e08240" />
-
-
-
-- Para brincar de Forca, vamos precisar de uma caneta e um papel.
-
-  
-- Copie o desenho da “forca” que se encontra na próxima página, ou, se preferir, imprima a página.
-
-  
-- O objetivo deste jogo é descobrir uma palavra adivinhando suas letras.
-
-  
-- Um dos jogadores deverá escolher uma palavra e escrever no papel, embaixo do desenho da 
-forca, o número de tracinhos correspondente a cada letra dessa palavra.
-
-- Os outros jogadores, um de cada vez, deve descobrir qual palavra é essa escolhendo uma letra 
-do alfabeto por vez.
-
-- Se errar deve-se desenhar uma parte do boneco na forca (cabeça, corpo, um braço, uma perna, 
-etc) e também se escreve a letra errada ao lado da forca para marcá-la.
-
-- Se acertar escreve-se a letra certa em cima do seu tracinho correspondente.
-  
-- Caso já tenham sido desenhadas todas as partes do corpo do boneco e nenhum jogador tenha 
-descoberto a palavra, faz-se um traço no pescoço do boneco, indicando que ele foi “enforcado” e
-
-o jogo termina sem um vencedor.
-- Vence o jogo, o jogador que descobrir a palavra antes que o boneco seja “enforcado”.
-
-
-O jogo da forca é um jogo em que o jogador tem que acertar qual é a palavra proposta, tendo como dica o número de letras e o tema ligado à palavra. 
-
-A cada letra errada, é desenhado uma parte do corpo do enforcado. O jogo termina ou com o acerto da palavra ou com o término do preenchimento das partes corpóreas do enforcado. 
-
-
+```
 
 ---
 
-**Contato:**
+## 7. 🚀 Próximos Passos
+
+A base de design bem estruturada torna a evolução do projeto direta:
+
+- [ ] **Interface gráfica com JavaFX** — a separação entre domínio e console já está feita; basta substituir o orquestrador de console por um controller JavaFX sem tocar nas classes de modelo;
+- [ ] **Banco de dados para o histórico** — substituir o CSV por SQLite ou H2 com JDBC, mantendo a interface de `Historico` intacta para o restante do sistema;
+- [ ] **Dicionário externo via API** — consumir palavras de uma API de dicionário (ex.: Datamuse ou DicAPI) para eliminar as listas hard-coded;
+- [ ] **Ranking persistido entre sessões** — salvar e carregar o placar de execuções anteriores, transformando o histórico em um sistema de recordes;
+- [ ] **Testes unitários com JUnit 5** — `Palavra`, `Forca` e `Dicionario` são facilmente testáveis sem dependências externas; a estrutura atual já viabiliza isso sem refatoração;
+- [ ] **Modo de dificuldade** — limitar o número de tentativas (fácil: 8, normal: 6, difícil: 4) configurável no início de cada partida.
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+| Tecnologia | Função no projeto |
+|---|---|
+| Java 17+ | Linguagem principal |
+| POO — Encapsulamento | Proteção do estado de `Palavra` e `Forca` |
+| POO — Separação de responsabilidades | Uma classe por conceito do domínio |
+| `Set<Character>` | Letras erradas sem duplicatas e busca O(1) |
+| `Map<String, List<String>>` | Dicionário de palavras por tema |
+| Exceção personalizada | `PalavraInvalidaException` para validação de domínio |
+| `FileWriter` + `BufferedReader` | Persistência do histórico em CSV com UTF-8 |
+| ASCII Art | Boneco da forca calculado por número de erros |
+
+---
+
+## 🔧 Como Executar
+
+**Pré-requisito:** Java 17+ instalado.
+
+**1. Clone o repositório**
+```bash
+git clone https://github.com/Santosdevbjj/jogoDaForca.git
+cd jogoDaForca
+```
+
+**2. Compile o projeto**
+```bash
+javac -d out src/**/*.java
+```
+
+**3. Execute o jogo**
+```bash
+java -cp out App
+```
+
+> O arquivo `historico_forca.csv` será criado automaticamente na raiz do projeto após a primeira partida.
+
+---
+
+## 📚 Aprendizados
+
+Este projeto me ensinou algo que nenhum tutorial sobre POO consegue transmitir diretamente: **a separação de responsabilidades não é uma regra de estilo — é o que torna o código modificável**.
+
+Quando precisei adicionar o modo multi-jogador, não toquei em `Palavra`, `Forca` nem `Dicionario`. Adicionei `Jogador`, ajustei o orquestrador em `JogoDaForca` e o jogo multi-jogador funcionou. Isso só foi possível porque as classes de domínio não sabiam nada sobre o fluxo do jogo.
+
+O maior erro da primeira versão foi misturar `System.out.println` dentro da classe `Palavra`. Parecia inofensivo — mas tornou impossível reutilizar a classe em qualquer contexto diferente do console. Remover essa dependência foi a refatoração mais impactante do projeto inteiro.
+
+Se fosse recomeçar, começaria desenhando o UML antes de escrever a primeira linha de código. Ter o diagrama de classes na mão antes de implementar evitaria as duas refatorações de design que precisei fazer no meio do desenvolvimento.
+
+---
+
+## 👤 Autor
+
+**Sérgio Santos**
 
 
 
-[![Portfólio Sérgio Santos](https://img.shields.io/badge/Portfólio-Sérgio_Santos-111827?style=for-the-badge&logo=githubpages&logoColor=00eaff)](https://portfoliosantossergio.vercel.app)
+[![Portfólio](https://img.shields.io/badge/Portfólio-Sérgio_Santos-111827?style=for-the-badge&logo=githubpages&logoColor=00eaff)](https://portfoliosantossergio.vercel.app)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Sérgio_Santos-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/santossergioluiz)
 
-[![LinkedIn Sérgio Santos](https://img.shields.io/badge/LinkedIn-Sérgio_Santos-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/santossergioluiz)
+---
 
+> *"O mercado de trabalho não contrata quem usa ferramentas — contrata quem resolve problemas com elas."*
+> — Meigarom Lopes
